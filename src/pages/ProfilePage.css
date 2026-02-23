@@ -1,0 +1,120 @@
+.profile-page {
+  padding: 60px 0 80px;
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  background: var(--ink);
+  color: var(--bone);
+  padding: 48px;
+  border-radius: 4px;
+  margin-bottom: 40px;
+}
+
+.profile-avatar {
+  width: 96px;
+  height: 96px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-family: var(--font-display);
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.profile-info h1 {
+  font-size: 40px;
+  color: var(--bone);
+  margin-bottom: 4px;
+}
+
+.profile-email {
+  font-size: 14px;
+  color: var(--warm-gray);
+  margin-bottom: 12px;
+}
+
+.profile-badge {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.1);
+  color: var(--bone);
+}
+
+.profile-badge.admin {
+  background: rgba(200, 169, 110, 0.3);
+  color: var(--accent);
+}
+
+.profile-sections {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 40px;
+  align-items: start;
+}
+
+.profile-section {
+  background: white;
+  border: 1px solid #e8e2d9;
+  border-radius: 4px;
+  padding: 32px;
+}
+
+.profile-section h2 {
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.detail-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #e8e2d9;
+}
+
+.detail-row:last-child { border-bottom: none; }
+
+.detail-row span {
+  font-size: 13px;
+  color: var(--warm-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+}
+
+.detail-row strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .profile-card { flex-direction: column; text-align: center; }
+  .profile-sections { grid-template-columns: 1fr; }
+}
