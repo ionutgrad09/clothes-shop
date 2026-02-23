@@ -3,6 +3,7 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 
 export function getDb() {
+  console.log("=== process.env.NETLIFY_DATABASE_URL ===", process.env.NETLIFY_DATABASE_URL);
   return neon(process.env.NETLIFY_DATABASE_URL!);
 }
 
