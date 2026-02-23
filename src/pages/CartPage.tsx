@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  Box, Container, Typography, Button, TextField, Divider,
+  Alert, Card, CardContent, IconButton, Chip, Stack, Paper,
+} from '@mui/material';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { useCart } from '../hooks/useCart';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
-import './CartPage.css';
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart, total, count } = useCart();
@@ -14,13 +20,16 @@ export default function CartPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
+  const shipping = total >= 100 ? 0 : 9.99;
+  const grandTotal = total + shipping;
+
   const handleOrder = async () => {
     if (!user) { navigate('/login'); return; }
     if (!address.trim()) { setError('Please enter a shipping address'); return; }
     setOrdering(true);
     setError('');
     try {
-      const orderItems = items.map(i => ({
+      const orderItems = items.map((i) => ({
         product_id: i.product.id,
         product_name: i.product.name,
         quantity: i.quantity,
@@ -39,128 +48,138 @@ export default function CartPage() {
   };
 
   if (success) return (
-    <div className="cart-success">
-      <div className="success-icon">✓</div>
-      <h2>Order Placed!</h2>
-      <p>Thank you for your order. We'll send you a confirmation shortly.</p>
-      <div style={{display:'flex',gap:'16px',marginTop:'32px'}}>
-        <Link to="/orders" className="btn btn-primary">View Orders</Link>
-        <Link to="/products" className="btn btn-outline">Continue Shopping</Link>
-      </div>
-    </div>
+    <Container maxWidth="sm" sx={{ py: 12, textAlign: 'center' }}>
+      <CheckCircleOutlineIcon sx={{ fontSize: '5rem', color: 'success.main', mb: 3 }} />
+      <Typography variant="h3" sx={{ mb: 2 }}>Order Placed!</Typography>
+      <Typography color="text.secondary" sx={{ mb: 5 }}>
+        Thank you for your order. We'll send you a confirmation shortly.
+      </Typography>
+      <Stack direction="row" spacing={2} justifyContent="center">
+        <Button component={Link} to="/orders" variant="contained">View Orders</Button>
+        <Button component={Link} to="/products" variant="outlined">Continue Shopping</Button>
+      </Stack>
+    </Container>
   );
 
   if (count === 0) return (
-    <div className="cart-empty">
-      <span>🛍️</span>
-      <h2>Your cart is empty</h2>
-      <p>Add some items to get started</p>
-      <Link to="/products" className="btn btn-primary" style={{marginTop:'24px'}}>
-        Shop Now
-      </Link>
-    </div>
+    <Container maxWidth="sm" sx={{ py: 12, textAlign: 'center' }}>
+      <ShoppingBagOutlinedIcon sx={{ fontSize: '5rem', color: 'text.secondary', mb: 3 }} />
+      <Typography variant="h3" sx={{ mb: 2 }}>Your cart is empty</Typography>
+      <Typography color="text.secondary" sx={{ mb: 5 }}>Add some items to get started</Typography>
+      <Button component={Link} to="/products" variant="contained" size="large">Shop Now</Button>
+    </Container>
   );
 
   return (
-    <div className="cart-page">
-      <div className="container">
-        <h1 className="cart-title">Shopping Basket</h1>
-        <p className="cart-subtitle">{count} {count === 1 ? 'item' : 'items'}</p>
+    <Container maxWidth="xl" sx={{ py: 5 }}>
+      <Typography variant="h3" sx={{ mb: 0.5 }}>Shopping Basket</Typography>
+      <Typography color="text.secondary" sx={{ mb: 5, fontSize: '0.85rem' }}>
+        {count} {count === 1 ? 'item' : 'items'}
+      </Typography>
 
-        <div className="cart-layout">
-          {/* Items */}
-          <div className="cart-items">
-            {items.map(item => (
-              <div key={`${item.product.id}-${item.size}-${item.color}`} className="cart-item">
-                <div className="cart-item-image">
-                  {item.product.image_url ? (
-                    <img src={item.product.image_url} alt={item.product.name} />
-                  ) : (
-                    <span style={{fontSize:'32px'}}>👗</span>
-                  )}
-                </div>
-                <div className="cart-item-info">
-                  <div className="cart-item-top">
-                    <div>
-                      <p className="cart-item-category">{item.product.category}</p>
-                      <h3 className="cart-item-name">{item.product.name}</h3>
-                      <p className="cart-item-meta">
-                        Size: {item.size} · Color: {item.color}
-                      </p>
-                    </div>
-                    <button
-                      className="remove-btn"
-                      onClick={() => removeItem(item.product.id, item.size, item.color)}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  <div className="cart-item-bottom">
-                    <div className="qty-control">
-                      <button onClick={() => updateQuantity(item.product.id, item.size, item.color, item.quantity - 1)}>−</button>
-                      <span>{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.product.id, item.size, item.color, item.quantity + 1)}>+</button>
-                    </div>
-                    <span className="cart-item-price">${(item.product.price * item.quantity).toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 380px' }, gap: 5, alignItems: 'start' }}>
+        {/* Cart items */}
+        <Stack spacing={2}>
+          {items.map((item) => (
+            <Card key={`${item.product.id}-${item.size}-${item.color}`}>
+              <CardContent sx={{ p: 2.5 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: 2.5 }}>
+                  {/* Image */}
+                  <Box sx={{ borderRadius: 1, overflow: 'hidden', bgcolor: '#f5f0e8', aspectRatio: '3/4' }}>
+                    {item.product.image_url ? (
+                      <Box component="img" src={item.product.image_url} alt={item.product.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>👗</Box>
+                    )}
+                  </Box>
+
+                  <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <Box>
+                        <Typography variant="overline" sx={{ fontSize: '0.6rem', color: 'secondary.main', fontWeight: 600 }}>
+                          {item.product.category}
+                        </Typography>
+                        <Typography variant="h6" sx={{ fontFamily: '"Playfair Display"', fontSize: '1rem', fontWeight: 400, lineHeight: 1.2 }}>
+                          {item.product.name}
+                        </Typography>
+                        <Stack direction="row" spacing={0.75} sx={{ mt: 0.75 }}>
+                          <Chip label={`Size: ${item.size}`} size="small" sx={{ fontSize: '0.65rem', height: 20 }} />
+                          <Chip label={`Color: ${item.color}`} size="small" sx={{ fontSize: '0.65rem', height: 20 }} />
+                        </Stack>
+                      </Box>
+                      <IconButton size="small" onClick={() => removeItem(item.product.id, item.size, item.color)} sx={{ color: 'text.secondary', '&:hover': { color: 'error.main' } }}>
+                        <DeleteOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'inline-flex', alignItems: 'center', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                        <Button onClick={() => updateQuantity(item.product.id, item.size, item.color, item.quantity - 1)} sx={{ minWidth: 32, p: 0.5, fontSize: '1rem' }}>−</Button>
+                        <Typography sx={{ px: 1.5, fontWeight: 600, fontSize: '0.85rem' }}>{item.quantity}</Typography>
+                        <Button onClick={() => updateQuantity(item.product.id, item.size, item.color, item.quantity + 1)} sx={{ minWidth: 32, p: 0.5, fontSize: '1rem' }}>+</Button>
+                      </Box>
+                      <Typography variant="h6" sx={{ fontFamily: '"Playfair Display"', fontWeight: 500, fontSize: '1.1rem' }}>
+                        ${(item.product.price * item.quantity).toFixed(2)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
+
+        {/* Order summary */}
+        <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 3, position: { lg: 'sticky' }, top: 96 }}>
+          <Typography variant="h5" sx={{ mb: 3 }}>Order Summary</Typography>
+
+          <Stack spacing={1.5} sx={{ mb: 3 }}>
+            {[
+              { label: 'Subtotal', value: `$${total.toFixed(2)}` },
+              { label: 'Shipping', value: shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}` },
+            ].map(({ label, value }) => (
+              <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography color="text.secondary" fontSize="0.9rem">{label}</Typography>
+                <Typography fontSize="0.9rem">{value}</Typography>
+              </Box>
             ))}
-          </div>
+            <Divider />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography fontWeight={700}>Total</Typography>
+              <Typography fontWeight={700} fontSize="1.1rem">${grandTotal.toFixed(2)}</Typography>
+            </Box>
+          </Stack>
 
-          {/* Summary */}
-          <div className="cart-summary">
-            <h2>Order Summary</h2>
+          {total < 100 && (
+            <Alert severity="info" sx={{ mb: 3, borderRadius: 2, fontSize: '0.78rem' }}>
+              Add ${(100 - total).toFixed(2)} more for free shipping!
+            </Alert>
+          )}
 
-            <div className="summary-lines">
-              <div className="summary-line">
-                <span>Subtotal</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
-              <div className="summary-line">
-                <span>Shipping</span>
-                <span>{total >= 100 ? 'Free' : '$9.99'}</span>
-              </div>
-              <div className="summary-line total">
-                <span>Total</span>
-                <span>${(total >= 100 ? total : total + 9.99).toFixed(2)}</span>
-              </div>
-            </div>
+          <TextField
+            label="Shipping Address"
+            multiline
+            rows={3}
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="Enter your full shipping address..."
+            sx={{ mb: 2 }}
+          />
 
-            <div className="shipping-field">
-              <label>Shipping Address</label>
-              <textarea
-                value={address}
-                onChange={e => setAddress(e.target.value)}
-                placeholder="Enter your full shipping address..."
-                rows={3}
-              />
-            </div>
+          {error && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{error}</Alert>}
 
-            {error && <div className="error-msg">{error}</div>}
-
-            {!user ? (
-              <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-                <Link to="/login" className="btn btn-primary" style={{width:'100%'}}>
-                  Sign In to Checkout
-                </Link>
-                <Link to="/register" className="btn btn-outline" style={{width:'100%',textAlign:'center'}}>
-                  Create Account
-                </Link>
-              </div>
-            ) : (
-              <button
-                className="btn btn-primary"
-                style={{width:'100%',padding:'16px'}}
-                onClick={handleOrder}
-                disabled={ordering}
-              >
-                {ordering ? 'Placing Order...' : 'Place Order'}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+          {!user ? (
+            <Stack spacing={1}>
+              <Button component={Link} to="/login" variant="contained" fullWidth size="large">Sign In to Checkout</Button>
+              <Button component={Link} to="/register" variant="outlined" fullWidth>Create Account</Button>
+            </Stack>
+          ) : (
+            <Button variant="contained" fullWidth size="large" onClick={handleOrder} disabled={ordering} sx={{ py: 1.5 }}>
+              {ordering ? 'Placing Order…' : 'Place Order'}
+            </Button>
+          )}
+        </Paper>
+      </Box>
+    </Container>
   );
 }

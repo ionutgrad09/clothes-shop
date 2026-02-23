@@ -1,115 +1,136 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import {
+  Box, Container, Typography, Grid, TextField, InputAdornment,
+  ToggleButtonGroup, ToggleButton, Skeleton, Alert,
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import { api } from '../lib/api';
 import { Product } from '../types';
 import ProductCard from '../components/shop/ProductCard';
-import './ProductsPage.css';
 
 const CATEGORIES = ['All', 'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Accessories'];
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [activeCategory, setActiveCategory] = useState(searchParams.get('category') || 'all');
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchProducts();
-    }, 300);
+    const timer = setTimeout(fetchProducts, 300);
     return () => clearTimeout(timer);
   }, [search, activeCategory]);
 
   const fetchProducts = async () => {
     setLoading(true);
+    setError('');
     try {
       const cat = activeCategory === 'all' ? undefined : activeCategory;
       const { products } = await api.products.list(search || undefined, cat);
       setProducts(products || []);
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      setError(e.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCategoryChange = (cat: string) => {
-    const val = cat.toLowerCase();
+  const handleCategory = (_: any, val: string) => {
+    if (!val) return;
     setActiveCategory(val);
-    setSearchParams(prev => {
-      if (val === 'all') prev.delete('category');
-      else prev.set('category', val);
-      return prev;
-    });
+    setSearchParams(val === 'all' ? {} : { category: val });
   };
 
   return (
-    <div className="products-page">
-      <div className="products-header">
-        <div className="container">
-          <h1>All Products</h1>
-          <p>{products.length} pieces in collection</p>
-        </div>
-      </div>
+    <Box>
+      {/* Header */}
+      <Box sx={{ bgcolor: 'primary.main', color: 'white', py: 8 }}>
+        <Container maxWidth="xl">
+          <Typography variant="h2" sx={{ color: 'white', fontSize: { xs: '2.5rem', md: '3.5rem' }, mb: 1 }}>
+            All Products
+          </Typography>
+          <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', letterSpacing: '0.05em' }}>
+            {products.length} pieces in collection
+          </Typography>
+        </Container>
+      </Box>
 
-      <div className="container products-layout">
-        {/* Sidebar */}
-        <aside className="products-sidebar">
-          <div className="filter-section">
-            <h3>Category</h3>
-            <div className="filter-options">
-              {CATEGORIES.map(cat => (
-                <button
-                  key={cat}
-                  className={`filter-btn ${activeCategory === cat.toLowerCase() ? 'active' : ''}`}
-                  onClick={() => handleCategoryChange(cat)}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-        </aside>
+      <Container maxWidth="xl" sx={{ py: 6 }}>
+        {/* Toolbar */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 5, alignItems: 'center' }}>
+          <TextField
+            placeholder="Search products…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            size="small"
+            sx={{ minWidth: 280, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            InputProps={{
+              startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: 'text.secondary', fontSize: '1.1rem' }} /></InputAdornment>,
+            }}
+          />
+          <ToggleButtonGroup
+            value={activeCategory}
+            exclusive
+            onChange={handleCategory}
+            size="small"
+            sx={{
+              flexWrap: 'wrap',
+              '& .MuiToggleButton-root': {
+                fontSize: '0.65rem',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                fontWeight: 500,
+                px: 2,
+                py: 0.75,
+                border: '1px solid',
+                borderColor: 'divider',
+                color: 'text.secondary',
+                '&.Mui-selected': {
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  borderColor: 'primary.main',
+                  '&:hover': { bgcolor: 'primary.light' },
+                },
+              },
+            }}
+          >
+            {CATEGORIES.map((cat) => (
+              <ToggleButton key={cat} value={cat.toLowerCase()}>{cat}</ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        </Box>
 
-        {/* Main */}
-        <div className="products-main">
-          <div className="products-toolbar">
-            <div className="search-box">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-              {search && (
-                <button className="clear-search" onClick={() => setSearch('')}>✕</button>
-              )}
-            </div>
-          </div>
+        {error && <Alert severity="error" sx={{ mb: 4 }}>{error}</Alert>}
 
-          {loading ? (
-            <div className="products-loading">
-              {Array.from({length:8}).map((_,i) => (
-                <div key={i} className="product-skeleton" />
-              ))}
-            </div>
-          ) : products.length === 0 ? (
-            <div className="products-empty">
-              <span>🔍</span>
-              <h3>No products found</h3>
-              <p>Try adjusting your search or filters</p>
-            </div>
-          ) : (
-            <div className="products-grid">
-              {products.map(p => <ProductCard key={p.id} product={p} />)}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+        {loading ? (
+          <Grid container spacing={3}>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Grid item xs={6} sm={4} md={3} key={i}>
+                <Skeleton variant="rectangular" sx={{ borderRadius: 1, aspectRatio: '3/4', width: '100%' }} />
+                <Skeleton sx={{ mt: 1 }} />
+                <Skeleton width="60%" />
+              </Grid>
+            ))}
+          </Grid>
+        ) : products.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 12 }}>
+            <Typography sx={{ fontSize: '4rem', mb: 2 }}>🔍</Typography>
+            <Typography variant="h4" sx={{ mb: 1 }}>No products found</Typography>
+            <Typography color="text.secondary">Try adjusting your search or filter</Typography>
+          </Box>
+        ) : (
+          <Grid container spacing={3}>
+            {products.map((p) => (
+              <Grid item xs={6} sm={4} md={3} key={p.id}>
+                <ProductCard product={p} />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Container>
+    </Box>
   );
 }
