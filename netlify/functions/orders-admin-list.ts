@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase, verifyToken, extractToken, cors, err } from './_helpers';
+import { getDb, verifyToken, extractToken, cors, err } from './_helpers';
 
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return cors({});
@@ -11,14 +11,21 @@ export const handler: Handler = async (event) => {
     const { role } = verifyToken(token);
     if (role !== 'admin') return err('Forbidden', 403);
 
-    const supabase = getSupabase();
-    const { data: orders, error } = await supabase
-      .from('orders')
-      .select('*, users(name, email)')
-      .order('created_at', { ascending: false });
+    const sql = getDb();
+    const orders = await sql`
+      SELECT o.*, u.name AS user_name, u.email AS user_email
+      FROM orders o
+      JOIN users u ON o.user_id = u.id
+      ORDER BY o.created_at DESC
+    `;
 
-    if (error) throw error;
-    return cors({ orders });
+    // Reshape to match the original { users: { name, email } } structure
+    const shaped = orders.map(({ user_name, user_email, ...o }) => ({
+      ...o,
+      users: { name: user_name, email: user_email },
+    }));
+
+    return cors({ orders: shaped });
   } catch (e: any) {
     return err(e.message, 500);
   }

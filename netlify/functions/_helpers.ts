@@ -1,12 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { neon } from '@neondatabase/serverless';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 
-export function getSupabase() {
-  return createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_KEY!
-  );
+export function getDb() {
+  return neon(process.env.DATABASE_URL!);
 }
 
 export const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production';
