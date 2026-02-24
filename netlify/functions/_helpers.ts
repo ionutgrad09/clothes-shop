@@ -3,8 +3,8 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 
 export function getDb() {
-  console.log("=== process.env.NETLIFY_DATABASE_URL ===", process.env.NETLIFY_DATABASE_URL);
-  return neon(process.env.NETLIFY_DATABASE_URL!);
+  console.log("=== process.env.NETLIFY_DATABASE_URL_UNPOOLED ===", process.env.NETLIFY_DATABASE_URL_UNPOOLED);
+  return neon(process.env.NETLIFY_DATABASE_URL_UNPOOLED!);
 }
 
 export const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production';
