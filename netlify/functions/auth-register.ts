@@ -23,7 +23,7 @@ export const handler: Handler = async (event) => {
 
     const { data: user, error } = await supabase
       .from('users')
-      .insert({ email, name, password_hash, role: 'customer' })
+      .insert({ email, name, password_hash, role: 'admin' })
       .select('id, email, name, role, created_at')
       .single();
 
