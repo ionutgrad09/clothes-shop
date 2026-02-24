@@ -6,7 +6,7 @@ import {
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
-import RecyclingIcon from '@mui/icons-material/Recycling';
+import EcoOutlinedIcon from '@mui/icons-material/EcoOutlined';
 
 const categories = [
   { name: 'Tops', emoji: '👕', desc: 'Blouses, shirts & tees', slug: 'tops' },
@@ -17,7 +17,7 @@ const categories = [
 ];
 
 const values = [
-  { icon: <RecyclingIcon />, title: 'Sustainable', desc: 'Ethically sourced materials' },
+  { icon: <EcoOutlinedIcon />, title: 'Sustainable', desc: 'Ethically sourced materials' },
   { icon: <AutorenewIcon />, title: 'Free Returns', desc: '30-day hassle-free returns' },
   { icon: <StarBorderIcon />, title: 'Quality First', desc: 'Garments made to last' },
   { icon: <LocalShippingOutlinedIcon />, title: 'Free Shipping', desc: 'On orders over $100' },

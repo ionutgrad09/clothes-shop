@@ -1,9 +1,12 @@
-import { neon } from '@netlify/neon';
+import { createClient } from '@supabase/supabase-js';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 
-export function getDb() {
-  return neon();
+export function getSupabase() {
+  return createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_KEY!
+  );
 }
 
 export const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production';

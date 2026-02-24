@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getDb, verifyToken, extractToken, cors, err } from './_helpers';
+import { getSupabase, verifyToken, extractToken, cors, err } from './_helpers';
 
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return cors({});
@@ -15,8 +15,9 @@ export const handler: Handler = async (event) => {
     const { id } = JSON.parse(event.body || '{}');
     if (!id) return err('Product ID required');
 
-    const sql = getDb();
-    await sql`DELETE FROM products WHERE id = ${id}`;
+    const supabase = getSupabase();
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) throw error;
     return cors({ success: true });
   } catch (e: any) {
     return err(e.message, 500);

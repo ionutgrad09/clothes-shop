@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getDb, verifyToken, extractToken, cors, err } from './_helpers';
+import { getSupabase, verifyToken, extractToken, cors, err } from './_helpers';
 
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return cors({});
@@ -9,15 +9,16 @@ export const handler: Handler = async (event) => {
     if (!token) return err('Unauthorized', 401);
 
     const { userId } = verifyToken(token);
-    const sql = getDb();
+    const supabase = getSupabase();
 
-    const rows = await sql`
-      SELECT id, email, name, role, created_at
-      FROM users WHERE id = ${userId} LIMIT 1
-    `;
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, email, name, role, created_at')
+      .eq('id', userId)
+      .single();
 
-    if (rows.length === 0) return err('User not found', 404);
-    return cors({ user: rows[0] });
+    if (error || !user) return err('User not found', 404);
+    return cors({ user });
   } catch (e: any) {
     return err('Unauthorized', 401);
   }

@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getDb, verifyToken, extractToken, cors, err } from './_helpers';
+import { getSupabase, verifyToken, extractToken, cors, err } from './_helpers';
 
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return cors({});
@@ -17,14 +17,15 @@ export const handler: Handler = async (event) => {
 
     if (!name || !price || !category) return err('Name, price and category required');
 
-    const sql = getDb();
-    const rows = await sql`
-      INSERT INTO products (name, description, price, category, sizes, colors, image_url, stock)
-      VALUES (${name}, ${description}, ${price}, ${category}, ${sizes}, ${colors}, ${image_url}, ${stock})
-      RETURNING *
-    `;
+    const supabase = getSupabase();
+    const { data: product, error } = await supabase
+      .from('products')
+      .insert({ name, description, price, category, sizes, colors, image_url, stock })
+      .select('*')
+      .single();
 
-    return cors({ product: rows[0] }, 201);
+    if (error) throw error;
+    return cors({ product }, 201);
   } catch (e: any) {
     return err(e.message, 500);
   }

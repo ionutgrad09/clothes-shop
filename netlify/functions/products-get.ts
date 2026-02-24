@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getDb, cors, err } from './_helpers';
+import { getSupabase, cors, err } from './_helpers';
 
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return cors({});
@@ -8,11 +8,15 @@ export const handler: Handler = async (event) => {
     const { id } = event.queryStringParameters || {};
     if (!id) return err('Product ID required');
 
-    const sql = getDb();
-    const rows = await sql`SELECT * FROM products WHERE id = ${id} LIMIT 1`;
+    const supabase = getSupabase();
+    const { data: product, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (rows.length === 0) return err('Product not found', 404);
-    return cors({ product: rows[0] });
+    if (error || !product) return err('Product not found', 404);
+    return cors({ product });
   } catch (e: any) {
     return err(e.message, 500);
   }

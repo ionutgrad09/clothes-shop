@@ -1,3 +1,16 @@
+- Check if `supabase-schema.sql` was run successfully
+- Verify `REACT_APP_SUPABASE_URL` is set (with `REACT_APP_` prefix)
+- Verify all 5 environment variables are set correctly
+- Make sure Supabase service key (not anon key) is in `SUPABASE_SERVICE_KEY`
+The Netlify functions need `jsonwebtoken`, `bcryptjs`, and `@supabase/supabase-js`. Add them to package.json:
+3. After adding all variables, go to **Deploys** → **Trigger deploy** → **Deploy site**
+| `REACT_APP_SUPABASE_URL` | `https://xxx.supabase.co` | For React frontend |
+| `REACT_APP_SUPABASE_ANON_KEY` | `eyJhbG...` (anon key) | For React frontend |
+| `SUPABASE_URL` | `https://xxx.supabase.co` | For Netlify functions |
+| `SUPABASE_SERVICE_KEY` | `eyJhbG...` (service role key) | For Netlify functions |
+| `JWT_SECRET` | Any random 32+ char string | Signs auth tokens |
+2. Click **Add a variable** for each of the following:
+This is **critical** — your functions won't work without these.
 # DRAPE — Full Deployment Guide
 ## React + Netlify Functions + Supabase PostgreSQL
 
